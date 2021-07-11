@@ -20,7 +20,11 @@ class Book(Base):
     price = Column('Price', Integer)
 
     def __repr__(self):
-        return f'Title: {self.title}\nAuthor: {self.author}\nPublished: {self.published_date}\nprice: ${self.price}'
+        return f'Book ID: {self.id}' \
+               f'\nTitle: {self.title}' \
+               f'\nAuthor: {self.author}' \
+               f'\nPublished: {self.published_date}' \
+               f'\nprice: ${str(self.price)[:-2]}.{str(self.price)[-2:]}'
 # -->books.db
 # create a model
 # -->title, author, date published, price

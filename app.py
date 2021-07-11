@@ -1,23 +1,15 @@
-# import models
 from models import Base, session, Book, engine
 import csv
 import datetime
 
 
-# begin main loop
-
-# print main menu - add, search, analysis, exit, view
-def menu():
+def menu(heading, option_list):
     while True:
-        print(
-            '''
-            \nPROGRAMMING BOOKS
-            \r1) Add book
-            \r2) View all books
-            \r3) Search for book
-            \r4) Book Analysis`
-            \r5) Exit
-            ''')
+
+        print(f'\n{heading}')
+        for i in range(len(option_list)):
+            print(f'\r{i+1}) {option_list[i]}')
+
         choice = input('What would you like to do? ')
         if int(choice) in range(1, 6):
             return int(choice)
@@ -28,27 +20,17 @@ def menu():
             \rPress ENTER to try again''')
 
 
-#   if confirm
-#       print changes made and add input (press any key to continue to exit to main menu)
-#   endif
+def print_book(book):
+    print('-' * 30, '\n', '-' * 30, sep='')
+    print(book)
 
-#   if edit
-#   ask user for name of book they would like to edit (use search function)
-#   ask user for input (title, author, date published, price) while displaying queued value
-#   endif
 
-# if search
-#   ask user how they would like to search (title, author, date published, price)
-#   endif
-
-#   if option not in option list
-#       print that is not an option
-#   endif
-
-# if add
-#   ask user for input (title, author, date published, price)
-#   display added book on screen with confirm or edit message
-# endif
+def search_book(choice):
+    while True:
+        if choice == 1:
+            book_id = input('Book ID: ')
+            book = session.query(Book).filter(Book.id == book_id).one()
+            return book
 
 
 def clean_date(date_str):
@@ -123,33 +105,76 @@ def add_book():
         if type(price) == int:
             break
     new_book = Book(title=title, author=author, published_date=published_date, price=price)
+    session.add(new_book)
+    session.commit()
 
 
-def main():
-    app_running = True
-    while app_running:
-        # main loop
-        choice = menu()
+def view_books():
+    for book in session.query(Book):
+        print_book(book)
+
+
+def main_menu():
+    menu_list = ('Add book', 'View all books', 'Search for a book', 'Book analysis', 'Exit')
+    while True:
+        choice = menu('PROGRAMMING BOOKS', menu_list)
         if choice == 1:
             add_book()
+            continue
         elif choice == 2:
-            print('view book - coming soon')
-            pass
+            view_books()
+            continue
         elif choice == 3:
-            print('search book - coming soon')
-            pass
+            search_menu()
+            continue
         elif choice == 4:
             print('book analysis - coming soon')
-            pass
+            continue
         else:
             print('Good Bye!!!')
             break
+    return choice
+
+
+def search_menu():
+    menu_list = ('By Book ID', 'By Title', 'By Author', 'By Date', 'Return to Main Menu')
+    while True:
+        choice = menu('How would you like to search for a book?', menu_list)
+        if choice == 1:
+            book = search_book(1)
+            print_book(book)
+            continue
+        elif choice == 2:
+            book = search_book(2)
+            print_book(book)
+            continue
+        elif choice == 3:
+            book = search_book(3)
+            print_book(book)
+            continue
+        elif choice == 4:
+            book = search_book(4)
+            print_book(book)
+            continue
+        elif choice == 5:
+            return main_menu()
+        return choice
 
 
 if __name__ == '__main__':
     Base.metadata.create_all(engine)
     add_csv()
-    main()
+    main_menu()
+
+
+#   if edit
+#   ask user for name of book they would like to edit (use search function)
+#   ask user for input (title, author, date published, price) while displaying queued value
+#   endif
+
+# if search
+#   ask user how they would like to search (title, author, date published, price)
+#   endif
 
 # if delete
 #   ask user for name of book they would like to delete (use search function)
@@ -157,6 +182,3 @@ if __name__ == '__main__':
 #   ask user to confirm
 #   delete book
 #   print deleted message
-
-
-# data cleaning
