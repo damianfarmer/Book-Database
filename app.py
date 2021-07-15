@@ -2,6 +2,7 @@ from models import Base, session, Book, engine
 import csv
 import datetime
 import time
+from sqlalchemy.orm.exc import NoResultFound
 
 
 ########################################################################################################################
@@ -160,32 +161,6 @@ def print_book(book):
     print(book)
 
 
-def search_book(choice):
-    """
-    Takes choice (integer) and queries the Book class for a given attribute.
-    Returns a Book class object
-    :param choice:
-    :return:
-    """
-    while True:
-        if choice == 1:
-            book_id = input('Book ID: ')
-            book = session.query(Book).filter(Book.id == book_id).one()
-            return book
-        if choice == 2:
-            title = input('Title: ')
-            book = session.query(Book).filter(Book.title == title).one()
-            return book
-        if choice == 3:
-            book_id = input('Book ID: ')
-            book = session.query(Book).filter(Book.id == book_id).one()
-            return book
-
-
-########################################################################################################################
-########################################################################################################################
-
-
 ########################################################################################################################
 # Menus - All program menus and menu template
 ########################################################################################################################
@@ -274,19 +249,36 @@ def search_menu():
     menu_list = ('ID', 'Title', 'Author', 'Published Date', 'Return to Main Menu')
     while True:
         choice = menu_template('SEARCH MENU', menu_list)
-        search_term = input(f'Enter the Book\'s {menu_list[choice - 1]}: ')
-        if choice == 1:
-            book = session.query(Book).filter(Book.id == search_term).one()
-        elif choice == 2:
-            book = session.query(Book).filter(Book.title == search_term).one()
-        elif choice == 3:
-            book = session.query(Book).filter(Book.author == search_term).one()
-        elif choice == 4:
-            book = session.query(Book).filter(Book.published_date == search_term).one()
-        else:
-            return main_menu()
-        print_book(book)
-        return edit_menu(book)
+        while True:
+            if choice != 5:
+                search_term = input(f'Enter the Book\'s {menu_list[choice - 1]} (Type "exit" to go back): ')
+                if search_term == 'exit':  # Sends user Back to Search Menu
+                    search_menu()
+                    break
+            elif choice == 1:
+                book = session.query(Book).filter(Book.id == search_term).first()
+                if book is None:
+                    input('No results found.\nPress Enter to continue: ')
+                    continue
+            elif choice == 2:
+                book = session.query(Book).filter(Book.title == search_term).first()
+                if book is None:
+                    input('No results found.\nPress Enter to continue: ')
+                    continue
+            elif choice == 3:
+                book = session.query(Book).filter(Book.author == search_term).first()
+                if book is None:
+                    input('No results found.\nPress Enter to continue: ')
+                    continue
+            elif choice == 4:
+                book = session.query(Book).filter(Book.published_date == search_term).first()
+                if book is None:
+                    input('No results found.\nPress Enter to continue: ')
+                    continue
+            else:
+                return main_menu()
+            print_book(book)
+            return edit_menu(book)
 
 
 def edit_menu(book):
@@ -320,7 +312,7 @@ def edit_menu(book):
             print_book(book)
             return edit_menu(book)
         if choice == 2:
-            book.delete(book)
+            session.delete(book)
             print('Deleted.')
             return main_menu()
         if choice == 3:
